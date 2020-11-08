@@ -9,18 +9,15 @@ namespace Servico.Venda.Models
     public class Vendas
     {
         [Required]
-        public int idProduct { get; set; }
+        public int idVenda { get; set; }
 
         [Required]
-        public string productName { get; set; }
+        public List<Produto> produtos { get; set; }
 
         [Required]
-        public string description { get; set; }
+        public decimal valorTotal { get; set; }
 
         [Required]
-        public string cathegory { get; set; }
-
-        [Required]
-        public decimal price { get; set; }
+        public string quantity { get; set; }
     }
 }
