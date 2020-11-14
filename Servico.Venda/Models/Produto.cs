@@ -22,5 +22,7 @@ namespace Servico.Venda.Models
 
         [Required]
         public decimal price { get; set; }
+
+        public int quantidade { get; set; }
     }
 }

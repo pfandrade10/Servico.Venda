@@ -9,9 +9,9 @@ namespace Servico.Venda.Estruturas
     {
         public EstruturaProduto()
         {
-            Produtos = new List<Models.Vendas>();
+            Produtos = new List<Models.Produto>();
         }
 
-        public List<Models.Vendas> Produtos { get; set; }
+        public List<Models.Produto> Produtos { get; set; }
     }
 }

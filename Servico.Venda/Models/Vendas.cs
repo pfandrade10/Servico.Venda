@@ -16,8 +16,5 @@ namespace Servico.Venda.Models
 
         [Required]
         public decimal valorTotal { get; set; }
-
-        [Required]
-        public string quantity { get; set; }
     }
 }
