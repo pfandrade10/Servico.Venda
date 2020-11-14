@@ -21,7 +21,7 @@ namespace Servico.Venda.Controllers
     {
         private readonly AppSettings _appSettings;
 
-       
+
         public VendasController(IOptions<AppSettings> appSettings)
         {
             this._appSettings = appSettings.Value;
@@ -47,7 +47,7 @@ namespace Servico.Venda.Controllers
 
                 return estruturaProduto;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 estruturaProduto.isError = true;
                 estruturaProduto.descricaoErro = ex.Message;
@@ -159,7 +159,7 @@ namespace Servico.Venda.Controllers
 
                     if (!string.IsNullOrEmpty(ListaVendasSession))
                     {
-                        List <Models.Vendas> Vendas = JsonConvert.DeserializeObject<List<Models.Vendas>>(ListaVendasSession);
+                        List<Models.Vendas> Vendas = JsonConvert.DeserializeObject<List<Models.Vendas>>(ListaVendasSession);
 
                         venda.idVenda = 0;
 
@@ -173,7 +173,7 @@ namespace Servico.Venda.Controllers
                     }
                     else
                         venda.idVenda = 1;
-                    
+
 
                 }
 
@@ -200,8 +200,8 @@ namespace Servico.Venda.Controllers
         /// </summary>
         /// <param name="venda"></param>
         /// <returns></returns>
-        [HttpPut]
-        public EstruturaVenda AlterarVenda([FromBody] Models.Vendas venda)
+        [HttpPost("InserirProduto")]
+        public EstruturaVenda InserirProduto([FromBody] EstruturaEntradaCriarVenda entrada, int idVenda)
         {
             EstruturaVenda estruturaVenda = new EstruturaVenda();
 
@@ -209,12 +209,12 @@ namespace Servico.Venda.Controllers
             {
                 BaseVendas baseProdutos = new BaseVendas();
 
-                if (venda == null)
-                    throw new Exception("o produto a ser alterado não pode ser nulo");
+                if (entrada == null)
+                    throw new Exception("o produto a ser inserido não pode ser nulo");
 
 
-                if (venda.idVenda == 0)
-                    throw new Exception("Favor selecionar um produto!");               
+                if (idVenda == 0)
+                    throw new Exception("Favor selecionar uma venda!");
 
                 string ListaVendasSession = HttpContext.Session.GetString("Vendas");
                 if (string.IsNullOrEmpty(ListaVendasSession))
@@ -222,15 +222,30 @@ namespace Servico.Venda.Controllers
                     throw new Exception("Não há vendas Registradas");
                 }
                 else
-                    estruturaVenda.Vendas = JsonConvert.DeserializeObject<List<Models.Vendas>>(ListaVendasSession);            
+                    estruturaVenda.Vendas = JsonConvert.DeserializeObject<List<Models.Vendas>>(ListaVendasSession);
 
-                Models.Vendas VendaAlterada = estruturaVenda.Vendas.Where(x => x.idVenda == venda.idVenda).SingleOrDefault();
+                Models.Vendas VendaAlterada = estruturaVenda.Vendas.Where(x => x.idVenda == idVenda).SingleOrDefault();
 
                 if (VendaAlterada == null)
-                    throw new Exception("produto selecionado não existe");
+                    throw new Exception("A venda selecionada não existe");
 
-                estruturaVenda.Vendas.Remove(VendaAlterada);
-                estruturaVenda.Vendas.Add(venda);
+                foreach (var item in entrada.EntradaCriarVenda)
+                {
+                    EstruturaProduto estruturaProduto = APIListarProdutoPorID(item.idProduto);
+
+                    Models.Produto produto = new Models.Produto();
+
+                    produto.idProduct = item.idProduto;
+                    produto.productName = estruturaProduto.Produtos[0].productName;
+                    produto.description = estruturaProduto.Produtos[0].description;
+                    produto.cathegory = estruturaProduto.Produtos[0].cathegory;
+                    produto.price = estruturaProduto.Produtos[0].price;
+                    produto.quantidade = item.quantidadeProdutos;
+
+                    VendaAlterada.produtos.Add(produto);
+
+                    VendaAlterada.valorTotal = VendaAlterada.valorTotal + estruturaProduto.Produtos[0].price * item.quantidadeProdutos;
+                }
 
                 string listaVendas = JsonConvert.SerializeObject(estruturaVenda.Vendas);
 
@@ -305,7 +320,7 @@ namespace Servico.Venda.Controllers
         /// <param name="idVenda"></param>
         /// <returns></returns>
         [HttpDelete("RemoverProduto")]
-        public EstruturaVenda DeleteProduto(int idVenda,int idProduto)
+        public EstruturaVenda DeleteProduto(int idVenda, int idProduto)
         {
 
             EstruturaVenda estruturaVenda = new EstruturaVenda();
@@ -385,7 +400,7 @@ namespace Servico.Venda.Controllers
             using (var client = new HttpClient())
             {
 
-                string endpoint = $"https://localhost:44383/api/Produto?idProduto="+id;
+                string endpoint = $"https://localhost:44383/api/Produto?idProduto=" + id;
 
                 var response = client.GetAsync(endpoint).Result;
 
